@@ -1,5 +1,5 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/DummyApp.BlobService.WebApi/DummyApp.BlobService.WebApi.csproj" />
+    <Project Path="src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj" />
   </Folder>
 </Solution>
