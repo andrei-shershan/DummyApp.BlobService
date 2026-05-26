@@ -17,14 +17,14 @@ stages:
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'
-        version: '10.0.x'
-      displayName: 'Use .NET 10 SDK'
+        version: '8.0.x'
+      displayName: 'Use .NET 8 SDK'
 
-    - script: dotnet restore src/DummyApp.BlobService.WebApi/DummyApp.BlobService.WebApi.csproj
+    - script: dotnet restore src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj
       displayName: 'Restore NuGet packages'
 
     - script: |
-        dotnet publish src/DummyApp.BlobService.WebApi/DummyApp.BlobService.WebApi.csproj
+        dotnet publish src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj
         --configuration Release
         --no-restore
         --output $(Build.ArtifactStagingDirectory)/publish
@@ -61,11 +61,11 @@ stages:
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(SERVICE_CONNECTION_TEST)'
-              appType: 'webAppLinux'
+              appType: 'functionAppLinux'
               appName: '$(APP_NAME_TEST)'
               package: '$(Pipeline.Workspace)/drop/site.zip'
-              runtimeStack: 'DOTNETCORE|10.0'
-            displayName: 'Deploy to Azure Web App (Test)'
+              runtimeStack: 'DOTNET_ISOLATED|8.0'
+            displayName: 'Deploy to Azure Function App (Test)'
 
 - stage: DeployProd
   displayName: 'Deploy prod'
@@ -86,8 +86,8 @@ stages:
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(SERVICE_CONNECTION_PROD)'
-              appType: 'webAppLinux'
+              appType: 'functionAppLinux'
               appName: '$(APP_NAME_PROD)'
               package: '$(Pipeline.Workspace)/drop/site.zip'
-              runtimeStack: 'DOTNETCORE|10.0'
-            displayName: 'Deploy to Azure Web App (Prod)'
+              runtimeStack: 'DOTNET_ISOLATED|8.0'
+            displayName: 'Deploy to Azure Function App (Prod)'
