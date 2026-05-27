@@ -61,7 +61,7 @@ stages:
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(SERVICE_CONNECTION_TEST)'
-              appType: 'functionAppLinux'
+              appType: 'functionApp'
               appName: '$(APP_NAME_TEST)'
               package: '$(Pipeline.Workspace)/drop/site.zip'
               runtimeStack: 'DOTNET_ISOLATED|8.0'
@@ -86,7 +86,7 @@ stages:
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(SERVICE_CONNECTION_PROD)'
-              appType: 'functionAppLinux'
+              appType: 'functionApp'
               appName: '$(APP_NAME_PROD)'
               package: '$(Pipeline.Workspace)/drop/site.zip'
               runtimeStack: 'DOTNET_ISOLATED|8.0'
