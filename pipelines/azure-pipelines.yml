@@ -23,7 +23,7 @@ stages:
     - script: dotnet restore src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj
       displayName: 'Restore NuGet packages'
 
-    - script: |
+    - script: >
         dotnet publish src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj
         --configuration Release
         --no-restore
