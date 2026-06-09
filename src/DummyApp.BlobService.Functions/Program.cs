@@ -1,29 +1,31 @@
-using Azure.Identity;
+using System;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var host = new HostBuilder()
+    .ConfigureAppConfiguration(config => config.AddEnvironmentVariables())
     .ConfigureFunctionsWorkerDefaults()
-    .ConfigureServices(services =>
+    .ConfigureServices((context, services) =>
     {
-        services.AddSingleton(sp =>
+        var connectionString = context.Configuration["BlobStorage:ConnectionString"];
+
+        if (string.IsNullOrWhiteSpace(connectionString))
         {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            var blobStorageUri = configuration["BlobStorageUri"];
+            throw new InvalidOperationException(
+                "Azure Blob Storage connection string is not configured. " +
+                "Set BlobStorage__ConnectionString.");
+        }
 
-            if (!string.IsNullOrEmpty(blobStorageUri))
-            {
-                // Deployed: use managed identity
-                return new BlobServiceClient(new Uri(blobStorageUri), new DefaultAzureCredential());
-            }
+        services.AddSingleton(new BlobServiceClient(connectionString));
 
-            // Local: fall back to connection string (UseDevelopmentStorage=true)
-            var connectionString = configuration["AzureWebJobsStorage"] ?? string.Empty;
-            return new BlobServiceClient(connectionString);
-        });
+        var containerName = context.Configuration["BlobStorage:ContainerName"] ?? "artworks";
+        var storageUrl = context.Configuration["BlobStorage:StorageUrl"] ?? "default";
+        services.AddSingleton(new BlobStorageOptions(storageUrl, containerName));
     })
     .Build();
 
 host.Run();
+
+public sealed record BlobStorageOptions(string StorageUrl, string ContainerName);
