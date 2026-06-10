@@ -1,11 +1,29 @@
-using System;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var host = new HostBuilder()
-    .ConfigureAppConfiguration(config => config.AddEnvironmentVariables())
+    .ConfigureAppConfiguration((context, config) =>
+    {
+        config.AddEnvironmentVariables();
+
+        if (!context.HostingEnvironment.IsDevelopment())
+        {
+            var builtConfig = config.Build();
+            var keyVaultUrl = builtConfig["KeyVault:Url"];
+            if (!string.IsNullOrEmpty(keyVaultUrl))
+            {
+                var clientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
+                var credential = string.IsNullOrEmpty(clientId)
+                    ? new ManagedIdentityCredential()
+                    : new ManagedIdentityCredential(clientId);
+
+                config.AddAzureKeyVault(new Uri(keyVaultUrl), credential);
+            }
+        }
+    })
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices((context, services) =>
     {
@@ -15,7 +33,7 @@ var host = new HostBuilder()
         {
             throw new InvalidOperationException(
                 "Azure Blob Storage connection string is not configured. " +
-                "Set BlobStorage__ConnectionString.");
+                "Set BlobStorage__ConnectionString or store BlobStorage--ConnectionString in Key Vault.");
         }
 
         services.AddSingleton(new BlobServiceClient(connectionString));
