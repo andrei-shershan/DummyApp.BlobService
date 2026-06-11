@@ -36,7 +36,16 @@ var host = new HostBuilder()
                 "Set BlobStorage__ConnectionString or store BlobStorage--ConnectionString in Key Vault.");
         }
 
-        services.AddSingleton(new BlobServiceClient(connectionString));
+        var useB2024Version = context.Configuration.GetValue<bool>("BlobStorage:Use2024Version");
+        if (useB2024Version)
+        {
+            var blobClientOptions = new BlobClientOptions(BlobClientOptions.ServiceVersion.V2024_02_04);
+            services.AddSingleton(new BlobServiceClient(connectionString, blobClientOptions));
+        }
+        else
+        {
+            services.AddSingleton(new BlobServiceClient(connectionString));
+        }
 
         var containerName = context.Configuration["BlobStorage:ContainerName"] ?? "artworks";
         var storageUrl = context.Configuration["BlobStorage:StorageUrl"] ?? "default";
