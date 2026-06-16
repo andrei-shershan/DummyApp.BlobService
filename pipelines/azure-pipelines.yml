@@ -42,9 +42,31 @@ stages:
     - publish: $(Build.ArtifactStagingDirectory)/site.zip
       artifact: drop
 
+- stage: Test
+  displayName: Test
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Test
+    displayName: Test job
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
+      displayName: 'Use .NET 8 SDK'
+
+    - script: dotnet restore tests/DummyApp.BlobService.Functions.Tests/DummyApp.BlobService.Functions.Tests.csproj
+      displayName: 'Restore test project packages'
+
+    - script: dotnet test tests/DummyApp.BlobService.Functions.Tests/DummyApp.BlobService.Functions.Tests.csproj --configuration Release --no-restore
+      displayName: 'Run unit tests'
+
 - stage: DeployTest
   displayName: 'Deploy test'
-  dependsOn: Build
+  dependsOn: Test
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'Manual')))
   jobs:
   - deployment: Deploy

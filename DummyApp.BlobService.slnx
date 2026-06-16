@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DummyApp.BlobService.Functions.Tests/DummyApp.BlobService.Functions.Tests.csproj" />
+  </Folder>
 </Solution>
