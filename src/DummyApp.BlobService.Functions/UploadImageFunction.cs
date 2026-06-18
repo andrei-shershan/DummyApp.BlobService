@@ -35,7 +35,12 @@ public sealed class UploadImageFunction
 
     [Function("UploadImage")]
     public async Task<HttpResponseData> UploadImage(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "images/upload")] HttpRequestData req,
+    #if DEBUG
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "images/upload")]
+    #else
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "images/upload")]
+    #endif
+        HttpRequestData req,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("UploadImage triggered. Method: {Method}, Url: {Url}", req.Method, req.Url);

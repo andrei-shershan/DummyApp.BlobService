@@ -4,11 +4,11 @@ COPY ["src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj"
 RUN dotnet restore "./src/DummyApp.BlobService.Functions/DummyApp.BlobService.Functions.csproj"
 COPY . .
 WORKDIR "/src/src/DummyApp.BlobService.Functions"
-RUN dotnet build "./DummyApp.BlobService.Functions.csproj" -c Release -o /app/build
+RUN dotnet build "./DummyApp.BlobService.Functions.csproj" -c Release -o /app/build /p:DefineConstants=DEBUG
 
 FROM build AS publish
 WORKDIR "/src/src/DummyApp.BlobService.Functions"
-RUN dotnet publish "./DummyApp.BlobService.Functions.csproj" -c Release -o /app/publish
+RUN dotnet publish "./DummyApp.BlobService.Functions.csproj" -c Release -o /app/publish /p:DefineConstants=DEBUG
 
 FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4 AS final
 WORKDIR /home/site/wwwroot
