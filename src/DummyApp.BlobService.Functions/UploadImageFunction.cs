@@ -1,9 +1,5 @@
-using System;
-using System.IO;
 using System.Net;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using DummyApp.BlobService.Functions.Models;
 using DummyApp.BlobService.Functions.Services;
 using Microsoft.Azure.Functions.Worker;
@@ -16,18 +12,18 @@ public sealed class UploadImageFunction
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    private readonly IBlobStorageService _blobStorageService;
+    private readonly IImageService _imageService;
     private readonly IUploadImageRequestValidator _validator;
     private readonly IContentTypeProvider _contentTypeProvider;
     private readonly ILogger<UploadImageFunction> _logger;
 
     public UploadImageFunction(
-        IBlobStorageService blobStorageService,
+        IImageService imageService,
         IUploadImageRequestValidator validator,
         IContentTypeProvider contentTypeProvider,
         ILogger<UploadImageFunction> logger)
     {
-        _blobStorageService = blobStorageService;
+        _imageService = imageService;
         _validator = validator;
         _contentTypeProvider = contentTypeProvider;
         _logger = logger;
@@ -58,6 +54,12 @@ public sealed class UploadImageFunction
             return CreateBadRequest(req, "Invalid JSON in request body.");
         }
 
+        if (uploadRequest is null)
+        {
+            _logger.LogWarning("UploadImage request body deserialized to null.");
+            return CreateBadRequest(req, "Invalid request body.");
+        }
+
         if (!_validator.TryValidate(uploadRequest, out var validationErrorMessage))
         {
             _logger.LogWarning("UploadImage request validation failed: {ValidationError}", validationErrorMessage);
@@ -76,12 +78,27 @@ public sealed class UploadImageFunction
         }
 
         var contentType = _contentTypeProvider.GetContentType(uploadRequest.FileName);
-        var blobUri = await _blobStorageService.UploadAsync(uploadRequest.FileName, imageBytes, contentType, cancellationToken);
+        ImageUploadResult uploadResult;
 
-        _logger.LogInformation("File uploaded successfully. FileName: {FileName}, BlobUrl: {BlobUrl}", uploadRequest.FileName, blobUri);
+        try
+        {
+            uploadResult = await _imageService.ProcessAndUploadAsync(uploadRequest.FileName, imageBytes, contentType, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to process and upload image.");
+            return CreateBadRequest(req, "Failed to process image.");
+        }
+
+        _logger.LogInformation("File uploaded successfully. FileName: {FileName}, BlobUrl: {BlobUrl}, ThumbnailUrl: {ThumbnailUrl}",
+            uploadRequest.FileName, uploadResult.OriginalUri, uploadResult.ThumbnailUri);
 
         var response = req.CreateResponse(HttpStatusCode.OK);
-        await response.WriteAsJsonAsync(new { url = blobUri.AbsoluteUri }, cancellationToken);
+        await response.WriteAsJsonAsync(new
+        {
+            url = uploadResult.OriginalUri.AbsoluteUri,
+            thumbnailUrl = uploadResult.ThumbnailUri.AbsoluteUri
+        }, cancellationToken);
         return response;
     }
 
