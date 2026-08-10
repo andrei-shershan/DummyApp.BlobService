@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBlobStorageService, BlobStorageService>();
         services.AddSingleton<IContentTypeProvider, ContentTypeProvider>();
         services.AddSingleton<IUploadImageRequestValidator, UploadImageRequestValidator>();
+        services.AddSingleton<IImageValidator, ImageValidator>();
         services.AddSingleton<IImageService, ImageService>();
 
         return services;
