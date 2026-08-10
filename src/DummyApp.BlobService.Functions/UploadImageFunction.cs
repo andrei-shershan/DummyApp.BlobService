@@ -13,17 +13,20 @@ public sealed class UploadImageFunction
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     private readonly IImageService _imageService;
+    private readonly IImageValidator _imageValidator;
     private readonly IUploadImageRequestValidator _validator;
     private readonly IContentTypeProvider _contentTypeProvider;
     private readonly ILogger<UploadImageFunction> _logger;
 
     public UploadImageFunction(
         IImageService imageService,
+        IImageValidator imageValidator,
         IUploadImageRequestValidator validator,
         IContentTypeProvider contentTypeProvider,
         ILogger<UploadImageFunction> logger)
     {
         _imageService = imageService;
+        _imageValidator = imageValidator;
         _validator = validator;
         _contentTypeProvider = contentTypeProvider;
         _logger = logger;
@@ -75,6 +78,12 @@ public sealed class UploadImageFunction
         {
             _logger.LogWarning(ex, "Invalid Base64 image data.");
             return CreateBadRequest(req, "Invalid Base64 image data.");
+        }
+
+        if (!_imageValidator.TryValidate(imageBytes, uploadRequest.FileName, out var imageValidationError))
+        {
+            _logger.LogWarning("UploadImage image validation failed: {ValidationError}", imageValidationError);
+            return CreateBadRequest(req, imageValidationError);
         }
 
         var contentType = _contentTypeProvider.GetContentType(uploadRequest.FileName);
