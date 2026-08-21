@@ -1,3 +1,9 @@
 **/obj/
 **/bin/
 **/local.settings.json
+**/tests
+**/pipelines
+**/.github
+**/*.slnx
+**/.vs
+**/.vscode
