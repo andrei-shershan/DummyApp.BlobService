@@ -53,10 +53,9 @@ public sealed class ImageValidator : IImageValidator
             }
             else if (imageType == ImageType.Avatar)
             {
-                // Avatar validation currently only guarantees a valid image and size; additional rules can be added later.
-                if (image.Width < 64 || image.Height < 64)
+                if (image.Width < 250 || image.Height < 250)
                 {
-                    errorMessage = "Avatar image must be at least 64x64 pixels.";
+                    errorMessage = "Avatar image must be at least 250x250 pixels.";
                     return false;
                 }
             }
