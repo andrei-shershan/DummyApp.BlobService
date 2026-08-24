@@ -1,3 +1,4 @@
+using DummyApp.BlobService.Functions.Models;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,14 +17,14 @@ public sealed class ImageService : IImageService
         _blobStorageService = blobStorageService;
     }
 
-    public async Task<ImageUploadResult> ProcessAndUploadAsync(string fileName, byte[] imageBytes, string contentType, CancellationToken cancellationToken)
+    public async Task<ImageUploadResult> ProcessAndUploadAsync(string fileName, byte[] imageBytes, string contentType, ImageType imageType, CancellationToken cancellationToken)
     {
-        var originalUri = await _blobStorageService.UploadAsync(fileName, imageBytes, contentType, cancellationToken);
+        var originalUri = await _blobStorageService.UploadAsync(imageType, fileName, imageBytes, contentType, cancellationToken);
 
         using var image = Image.Load(imageBytes);
         image.Mutate(x => x.Resize(new ResizeOptions
         {
-            Size = new Size(200, 0),
+            Size = new Size(250, 0),
             Mode = ResizeMode.Max
         }));
 
@@ -33,7 +34,7 @@ public sealed class ImageService : IImageService
         var thumbnailBytes = thumbnailStream.ToArray();
 
         var thumbnailFileName = GetSmallFileName(fileName);
-        var thumbnailUri = await _blobStorageService.UploadAsync(thumbnailFileName, thumbnailBytes, contentType, cancellationToken);
+        var thumbnailUri = await _blobStorageService.UploadAsync(imageType, thumbnailFileName, thumbnailBytes, contentType, cancellationToken);
 
         return new ImageUploadResult(originalUri, thumbnailUri);
     }
