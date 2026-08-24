@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using DummyApp.BlobService.Functions.Models;
 using DummyApp.BlobService.Functions.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -24,7 +25,7 @@ public sealed class ImageServiceTests
         var contentType = "image/png";
         var imageBytes = await CreateTestPngImageAsync();
 
-        var result = await imageService.ProcessAndUploadAsync(fileName, imageBytes, contentType, CancellationToken.None);
+        var result = await imageService.ProcessAndUploadAsync(fileName, imageBytes, contentType, ImageType.Artwork, CancellationToken.None);
 
         Assert.Equal(new Uri("https://example.com/picture.png"), result.OriginalUri);
         Assert.Equal(new Uri("https://example.com/picture-small.png"), result.ThumbnailUri);
@@ -67,7 +68,7 @@ public sealed class ImageServiceTests
             _uploadCalls = uploadCalls;
         }
 
-        public Task<Uri> UploadAsync(string fileName, byte[] content, string contentType, CancellationToken cancellationToken)
+        public Task<Uri> UploadAsync(ImageType imageType, string fileName, byte[] content, string contentType, CancellationToken cancellationToken)
         {
             _uploadCalls.Add(new UploadCall(fileName, content, contentType));
             return Task.FromResult(new Uri($"https://example.com/{fileName}"));

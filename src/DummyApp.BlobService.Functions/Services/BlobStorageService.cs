@@ -1,5 +1,6 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using DummyApp.BlobService.Functions.Models;
 using Microsoft.Extensions.Options;
 using DummyApp.BlobService.Functions.Options;
 
@@ -16,9 +17,13 @@ public sealed class BlobStorageService : IBlobStorageService
         _options = options.Value;
     }
 
-    public async Task<Uri> UploadAsync(string fileName, byte[] content, string contentType, CancellationToken cancellationToken)
+    public async Task<Uri> UploadAsync(ImageType imageType, string fileName, byte[] content, string contentType, CancellationToken cancellationToken)
     {
-        var containerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
+        var containerName = imageType == ImageType.Avatar
+            ? BlobContainerNames.Avatars
+            : BlobContainerNames.Artworks;
+
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
         await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob, cancellationToken: cancellationToken);
 
         var blobClient = containerClient.GetBlobClient(fileName);

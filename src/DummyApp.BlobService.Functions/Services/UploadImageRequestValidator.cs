@@ -24,6 +24,12 @@ public sealed class UploadImageRequestValidator : IUploadImageRequestValidator
             return false;
         }
 
+        if (!Enum.IsDefined(typeof(ImageType), request.ImageType))
+        {
+            errorMessage = "ImageType is invalid.";
+            return false;
+        }
+
         errorMessage = string.Empty;
         return true;
     }

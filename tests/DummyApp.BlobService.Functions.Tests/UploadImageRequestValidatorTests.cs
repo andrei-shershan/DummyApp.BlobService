@@ -1,3 +1,4 @@
+using DummyApp.BlobService.Functions.Models;
 using DummyApp.BlobService.Functions.Services;
 using Xunit;
 
@@ -20,7 +21,7 @@ public sealed class UploadImageRequestValidatorTests
     public void TryValidate_ReturnsFalse_WhenFileNameIsMissing()
     {
         var validator = new UploadImageRequestValidator();
-        var request = new Models.UploadImageRequest(Base64Image: "abc", FileName: string.Empty);
+        var request = new Models.UploadImageRequest(Base64Image: "abc", FileName: string.Empty, ImageType.Artwork);
 
         var result = validator.TryValidate(request, out var errorMessage);
 
@@ -32,7 +33,7 @@ public sealed class UploadImageRequestValidatorTests
     public void TryValidate_ReturnsFalse_WhenBase64ImageIsMissing()
     {
         var validator = new UploadImageRequestValidator();
-        var request = new Models.UploadImageRequest(Base64Image: string.Empty, FileName: "image.png");
+        var request = new Models.UploadImageRequest(Base64Image: string.Empty, FileName: "image.png", ImageType.Artwork);
 
         var result = validator.TryValidate(request, out var errorMessage);
 
@@ -44,7 +45,7 @@ public sealed class UploadImageRequestValidatorTests
     public void TryValidate_ReturnsTrue_WhenRequestIsValid()
     {
         var validator = new UploadImageRequestValidator();
-        var request = new Models.UploadImageRequest(Base64Image: "YmFzZTY0", FileName: "image.png");
+        var request = new Models.UploadImageRequest(Base64Image: "YmFzZTY0", FileName: "image.png", ImageType.Artwork);
 
         var result = validator.TryValidate(request, out var errorMessage);
 

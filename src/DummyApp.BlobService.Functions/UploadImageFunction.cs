@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using DummyApp.BlobService.Functions.Models;
 using DummyApp.BlobService.Functions.Services;
 using Microsoft.Azure.Functions.Worker;
@@ -10,7 +11,10 @@ namespace DummyApp.BlobService.Functions;
 
 public sealed class UploadImageFunction
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     private readonly IImageService _imageService;
     private readonly IImageValidator _imageValidator;
@@ -80,7 +84,7 @@ public sealed class UploadImageFunction
             return CreateBadRequest(req, "Invalid Base64 image data.");
         }
 
-        if (!_imageValidator.TryValidate(imageBytes, uploadRequest.FileName, out var imageValidationError))
+        if (!_imageValidator.TryValidate(imageBytes, uploadRequest.FileName, uploadRequest.ImageType, out var imageValidationError))
         {
             _logger.LogWarning("UploadImage image validation failed: {ValidationError}", imageValidationError);
             return CreateBadRequest(req, imageValidationError);
@@ -91,7 +95,7 @@ public sealed class UploadImageFunction
 
         try
         {
-            uploadResult = await _imageService.ProcessAndUploadAsync(uploadRequest.FileName, imageBytes, contentType, cancellationToken);
+            uploadResult = await _imageService.ProcessAndUploadAsync(uploadRequest.FileName, imageBytes, contentType, uploadRequest.ImageType, cancellationToken);
         }
         catch (Exception ex)
         {
