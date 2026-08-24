@@ -1,3 +1,4 @@
+using DummyApp.BlobService.Functions.Models;
 using DummyApp.BlobService.Functions.Services;
 using Xunit;
 

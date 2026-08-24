@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using DummyApp.BlobService.Functions.Models;
 using DummyApp.BlobService.Functions.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -14,7 +15,7 @@ public sealed class ImageValidatorTests
     {
         var validator = new ImageValidator();
 
-        var result = validator.TryValidate(new byte[0], "image.png", out var errorMessage);
+        var result = validator.TryValidate(new byte[0], "image.png", ImageType.Artwork, out var errorMessage);
 
         Assert.False(result);
         Assert.Equal("Image data is required.", errorMessage);
@@ -26,7 +27,7 @@ public sealed class ImageValidatorTests
         var validator = new ImageValidator();
         var imageBytes = Enumerable.Repeat((byte)1, 10 * 1024 * 1024 + 1).ToArray();
 
-        var result = validator.TryValidate(imageBytes, "image.png", out var errorMessage);
+        var result = validator.TryValidate(imageBytes, "image.png", ImageType.Artwork, out var errorMessage);
 
         Assert.False(result);
         Assert.Equal("Image size must not exceed 10 MB.", errorMessage);
@@ -41,7 +42,7 @@ public sealed class ImageValidatorTests
         image.SaveAsPng(stream);
         var imageBytes = stream.ToArray();
 
-        var result = validator.TryValidate(imageBytes, "image.png", out var errorMessage);
+        var result = validator.TryValidate(imageBytes, "image.png", ImageType.Artwork, out var errorMessage);
 
         Assert.False(result);
         Assert.Equal("Image width must be at least 1024 pixels.", errorMessage);
@@ -56,7 +57,7 @@ public sealed class ImageValidatorTests
         image.SaveAsPng(stream);
         var imageBytes = stream.ToArray();
 
-        var result = validator.TryValidate(imageBytes, "image.png", out var errorMessage);
+        var result = validator.TryValidate(imageBytes, "image.png", ImageType.Artwork, out var errorMessage);
 
         Assert.False(result);
         Assert.Equal("Image must have A4 portrait proportions.", errorMessage);
@@ -71,7 +72,7 @@ public sealed class ImageValidatorTests
         image.SaveAsPng(stream);
         var imageBytes = stream.ToArray();
 
-        var result = validator.TryValidate(imageBytes, "image.png", out var errorMessage);
+        var result = validator.TryValidate(imageBytes, "image.png", ImageType.Artwork, out var errorMessage);
 
         Assert.True(result);
         Assert.Equal(string.Empty, errorMessage);
